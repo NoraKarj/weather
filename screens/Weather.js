@@ -1,45 +1,53 @@
 import React,{useState, useEffect} from "react";
-import { StyleSheet, Text, Image } from "react-native";
+import { StyleSheet, Text, Image, View } from "react-native";
 
-const API_URL='https://api.openweathermap.org/data/2.5/weather?';
-const API_KEY = '6d1a10ec6d6be2a0fc51667bf5922fb2';
-const ICON_URL ='http://openweathermap.org/img/wn/';
+const api ={
+    url:  process.env.EXPO_PUBLIC_API_URL,
+    key: process.env.EXPO_PUBLIC_API_KEY,
+    icons: process.env.EXPO_PUBLIC_ICONS_URL
+}
 
-export default function  Weather({latitude,longitude}){
+export default function  Weather(props){
     const [temp,setTemp]=  useState(0);
     const [description, setDescription]  = useState('');
     const [icon, setIcon] = useState('');
 
 
     useEffect(() =>{
-        const url = API_URL +
-        'lat=' + latitude +
-        '&lon=' + longitude +
+        const url = api.url +
+        'lat=' + props.latitude +
+        '&lon=' + props.longitude +
         '&units=metric' +
-        '&appid=' + API_KEY;
+        '&appid=' + api.key
+
+
         fetch(url)
         .then(res => res.json())
-        .then(
-            (result) =>{
-                setTemp(result.main.temp);
-                setDescription(result.weather[0].description);
-                setIcon(ICON_URL + result.weather[0].icon + '@2x.png');
-            },
-            (error) => {
-                alert(error);
-            }
-        )
+        .then((json) =>{
+           console.log(json)
+                setTemp(json.main.temp);
+                setDescription(json.weather[0].description);
+                setIcon(api.icons + json.weather[0].icon + '@2x.png');
+            })
+           .catch((error)=> {
+            setDescription("Error retrieving weather information.")
+            console.log(error)
+           })
+            
+        
     },  [])
 
 
     return (
-        <>
-            <Text style={styles.label}>Temperature</Text>
-            <Text> {temp}</Text>
-            <Text style={styles.label}>Description</Text>
-            <Text>{description}</Text>
+       <View>
+         
+            <Text  style={styles.temp}>{temp}</Text>
+           
+            {icon&&
             <Image source={{uri: icon}}style={{width: 100,height: 100}}/>
-        </>
+            }
+            <Text>{description}</Text>
+     </View>
     )
 }
 
